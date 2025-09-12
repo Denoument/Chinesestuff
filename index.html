@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traditional & Simplified Chinese Character Study</title>
+    <!-- Use Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+	<link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
+	<link rel="icon" href="favicon-16x16.png" sizes="16x16" type="image/png">
+	<link rel="apple-touch-icon" href="apple-touch-icon.png">
+	<link rel="manifest" href="site.webmanifest">
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HanziWriter library for stroke order animation -->
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.2/dist/hanzi-writer.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        /* Style for HanziWriter canvas */
+        .character-animation {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+        /* Style for Zhuyin font */
+        .zhuyin-display {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+            font-family: 'Inter', sans-serif; /* Fallback */
+        }
+        .loading-indicator {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        .animation-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .control-btn {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background-color: #10B981;
+            color: white;
+        }
+        .play-btn:hover {
+            background-color: #059669;
+        }
+        .pause-btn {
+            background-color: #F59E0B;
+            color: white;
+        }
+        .pause-btn:hover {
+            background-color: #D97706;
+        }
+        .replay-btn {
+            background-color: #3B82F6;
+            color: white;
+        }
+        .replay-btn:hover {
+            background-color: #2563EB;
+        }
+				/* Logo styling */
+		.logo-container {
+			position: absolute;
+			top: 20px;
+			left: 20px;
+			z-index: 10;
+		}
+		.logo-link {
+			display: flex;
+			align-items: center;
+			text-decoration: none;
+			color: #3B82F6;
+			font-weight: bold;
+			transition: transform 0.2s;
+		}
+		.logo-link:hover {
+			transform: scale(1.05);
+		}
+		.logo-image {
+			width: 150px;
+			height: 150px;
+			margin-right: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+		}
+		@media (max-width: 640px) {
+			.logo-container {
+				top: 10px;
+				left: 10px;
+			}
+			.logo-text {
+				display: none; /* Hide text on small screens */
+			}
+	}
+    </style>
+</head>
+<body class="p-4 md:p-8 bg-gray-100 flex items-center justify-center min-h-screen">
+    <!-- Loading indicator -->
+	<!-- Logo/Home Button -->
+	<div class="logo-container">
+		<a href="#" class="logo-link">
+			<img src="ORIGINAL FAVICON.png" alt="Home" class="logo-image">
+			<span class="logo-text"></span>
+		</a>
+	</div>
+    <div id="loading-indicator" class="loading-indicator flex flex-col items-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-3"></div>
+        <p class="text-gray-700">Loading character data...</p>
+    </div>
+
+    <div class="max-w-5xl w-full p-6 md:p-10 bg-white rounded-2xl shadow-xl space-y-8 text-center">
+        <!-- Title -->
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Traditional & Simplified Chinese Character Study</h1>
+        
+        <!-- Dropdowns for selecting the day and characters per day -->
+        <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <div class="flex flex-col items-center space-y-2">
+                <label for="char-count-select" class="text-lg font-medium text-gray-700">Characters per Day:</label>
+                <select id="char-count-select" class="w-full max-w-sm px-4 py-2 text-lg rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all duration-200">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+            <div class="flex flex-col items-center space-y-2">
+                <label for="day-select" class="text-lg font-medium text-gray-700">Select a Day:</label>
+                <select id="day-select" class="w-full max-w-sm px-4 py-2 text-lg rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all duration-200">
+                    <option value="" disabled selected>-- Choose a Day --</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Container for characters and meanings -->
+        <div id="characters-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 justify-items-center p-4 border-2 border-dashed border-gray-300 rounded-xl transition-all duration-300">
+            <!-- Character boxes will be populated here by JavaScript -->
+        </div>
+
+        <!-- Buttons to show/hide meanings and toggle character type -->
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
+            <button id="toggle-meaning-btn" class="px-6 py-3 font-semibold text-white bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" disabled>
+                Show Meanings
+            </button>
+            <button id="toggle-type-btn" class="px-6 py-3 font-semibold text-white bg-indigo-500 rounded-full shadow-lg hover:bg-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" disabled>
+                Switch to Simplified
+            </button>
+        </div>
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Show loading indicator
+            const loadingIndicator = document.getElementById('loading-indicator');
+            loadingIndicator.style.display = 'flex';
+            
+            try {
+                // Load characters from adjustedCharacters.json
+                const response = await fetch('adjustedCharacters.json');
+                if (!response.ok) {
+                    throw new Error(`Failed to load character data: ${response.status} ${response.statusText}`);
+                }
+                
+                const allCharacters = await response.json();
+                
+                // If you want to process stroke data further, you can still do it here.
+                // Example: (currently just passes through)
+                const adjustedCharacters = allCharacters.map(entry => ({
+                  char: entry.char,
+                  simplifiedChar: entry.simplifiedChar,
+                  pinyin: entry.pinyin,
+                  zhuyin: entry.zhuyin,
+                  TradStrokeCount: entry.TradStrokeCount,
+                  SimpStrokeCount: entry.SimpStrokeCount,
+                  meaning: entry.meaning
+                }));
+
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+
+                // Get DOM elements
+                const daySelect = document.getElementById('day-select');
+                const charCountSelect = document.getElementById('char-count-select');
+                const charactersContainer = document.getElementById('characters-container');
+                const toggleMeaningBtn = document.getElementById('toggle-meaning-btn');
+                const toggleTypeBtn = document.getElementById('toggle-type-btn');
+
+                // State variables
+                let isSimplifiedMode = false;
+                let writers = []; // Store HanziWriter instances
+                
+                // Function to dynamically populate the day dropdown
+                function populateDayDropdown() {
+                    const charCount = parseInt(charCountSelect.value, 10);
+                    const maxDays = Math.ceil(adjustedCharacters.length / charCount);
+                    daySelect.innerHTML = '<option value="" disabled selected>-- Choose a Day --</option>';
+                    for (let i = 1; i <= maxDays; i++) {
+                        const option = document.createElement('option');
+                        option.value = `day${i}`;
+                        option.textContent = `Day ${i}`;
+                        daySelect.appendChild(option);
+                    }
+                }
+                
+                // Function to dynamically populate the character count dropdown
+                function populateCharCountDropdown() {
+                    for (let i = 1; i <= 10; i++) {
+                        const option = document.createElement('option');
+                        option.value = i;
+                        option.textContent = `${i} Character${i > 1 ? 's' : ''}`;
+                        charCountSelect.appendChild(option);
+                    }
+                    // Set default to 5
+                    charCountSelect.value = 5;
+                }
+
+                // Function to update the character display based on the selected day and character count
+                function updateCharacters() {
+                    const selectedDay = daySelect.value;
+                    const charCount = parseInt(charCountSelect.value, 10);
+                    const dayNumber = selectedDay ? parseInt(selectedDay.replace('day', ''), 10) : 1; // Default to Day 1 if no day is selected
+                    const startIndex = (dayNumber - 1) * charCount;
+                    const charactersToDisplay = adjustedCharacters.slice(startIndex, startIndex + charCount);
+
+                    // Clear old content and reset writers
+                    charactersContainer.innerHTML = '';
+                    writers = [];
+
+                    // Disable buttons if no characters are found
+                    const areButtonsDisabled = charactersToDisplay.length === 0;
+                    toggleMeaningBtn.disabled = areButtonsDisabled;
+                    toggleTypeBtn.disabled = areButtonsDisabled;
+                    
+                    if (areButtonsDisabled) {
+                        charactersContainer.innerHTML = '<p class="text-gray-500">No characters found for this day with the selected count.</p>';
+                        return;
+                    }
+
+                    // Update the grid columns based on the number of characters
+                    let gridClass;
+                    if (charCount <= 2) {
+                        gridClass = 'grid-cols-1';
+                    } else if (charCount <= 4) {
+                        gridClass = 'grid-cols-2';
+                    } else if (charCount <= 6) {
+                        gridClass = 'grid-cols-3';
+                    } else {
+                        gridClass = 'grid-cols-5';
+                    }
+                    charactersContainer.className = `grid ${gridClass} gap-4 justify-items-center p-4 border-2 border-dashed border-gray-300 rounded-xl transition-all duration-300`;
+
+                    charactersToDisplay.forEach((character, index) => {
+                        const charToRender = isSimplifiedMode ? character.simplifiedChar : character.char;
+                        const containerId = `character-writer-${startIndex + index}`;
+
+                        const characterDiv = document.createElement('div');
+                        characterDiv.className = 'character-box flex flex-col items-center p-4 bg-gray-50 rounded-xl shadow-md transition-all duration-300 transform hover:scale-105';
+                        
+                        // Stroke count display, now using the value from the array
+                        const strokeCountDiv = document.createElement('div');
+                        strokeCountDiv.className = 'text-sm font-semibold text-gray-400';
+                        strokeCountDiv.textContent = `Strokes: ${isSimplifiedMode ? character.SimpStrokeCount : character.TradStrokeCount}`;
+
+                        // HanziWriter animation container
+                        const animationDiv = document.createElement('div');
+                        animationDiv.className = 'character-animation';
+                        animationDiv.id = containerId;
+                        
+                        // Pinyin and Zhuyin display in a single line
+                        const pronunciationDiv = document.createElement('div');
+                        pronunciationDiv.className = 'text-sm text-gray-400 mt-1 flex items-center space-x-2';
+                        
+                        const pinyinSpan = document.createElement('span');
+                        pinyinSpan.className = 'pinyin-display';
+                        pinyinSpan.textContent = character.pinyin;
+                        
+                        const zhuyinSpan = document.createElement('span');
+                        zhuyinSpan.className = 'zhuyin-display';
+                        zhuyinSpan.textContent = `(${character.zhuyin})`;
+                        
+                        pronunciationDiv.appendChild(pinyinSpan);
+                        pronunciationDiv.appendChild(zhuyinSpan);
+
+                        // Meaning display (starts hidden)
+                        const meaningDiv = document.createElement('div');
+                        meaningDiv.className = 'meaning-display text-sm text-gray-600 mt-1 hidden';
+                        meaningDiv.textContent = character.meaning;
+                        
+                        // Animation controls container
+                        const controlsDiv = document.createElement('div');
+                        controlsDiv.className = 'animation-controls';
+                        
+                        // Play button
+                        const playBtn = document.createElement('button');
+                        playBtn.className = 'control-btn play-btn';
+                        playBtn.textContent = 'Play';
+                        
+                        // Pause button
+                        const pauseBtn = document.createElement('button');
+                        pauseBtn.className = 'control-btn pause-btn';
+                        pauseBtn.textContent = 'Pause';
+                        pauseBtn.style.display = 'none';
+                        
+                        // Replay button
+                        const replayBtn = document.createElement('button');
+                        replayBtn.className = 'control-btn replay-btn';
+                        replayBtn.textContent = 'Replay';
+                        
+                        controlsDiv.appendChild(playBtn);
+                        controlsDiv.appendChild(pauseBtn);
+                        controlsDiv.appendChild(replayBtn);
+                        
+                        // Append elements to the character box
+                        characterDiv.appendChild(strokeCountDiv);
+                        characterDiv.appendChild(animationDiv);
+                        characterDiv.appendChild(pronunciationDiv);
+                        characterDiv.appendChild(meaningDiv);
+                        characterDiv.appendChild(controlsDiv);
+                        
+                        // Append the complete box to the container
+                        charactersContainer.appendChild(characterDiv);
+                        
+                        // Initialize HanziWriter for stroke order animation
+                        const writer = HanziWriter.create(animationDiv.id, charToRender, {
+                            width: 120,
+                            height: 120,
+                            strokeAnimationSpeed: 1,
+                            showOutline: true,
+                            delayBetweenStrokes: 500
+                        });
+                        
+                        // Store the writer instance for later use
+                        writers.push(writer);
+                        
+                        // Animation state
+                        let isPlaying = false;
+                        let isPaused = false;
+                        
+                        // Play button event
+                        playBtn.addEventListener('click', () => {
+                            if (isPaused) {
+                                // Resume animation
+                                writer.resumeAnimation();
+                                playBtn.style.display = 'none';
+                                pauseBtn.style.display = 'inline-block';
+                                isPlaying = true;
+                                isPaused = false;
+                            } else {
+                                // Start animation
+                                writer.animateCharacter({
+                                    onComplete: () => {
+                                        isPlaying = false;
+                                        isPaused = false;
+                                        playBtn.style.display = 'inline-block';
+                                        pauseBtn.style.display = 'none';
+                                    }
+                                });
+                                playBtn.style.display = 'none';
+                                pauseBtn.style.display = 'inline-block';
+                                isPlaying = true;
+                            }
+                        });
+                        
+                        // Pause button event
+                        pauseBtn.addEventListener('click', () => {
+                            writer.pauseAnimation();
+                            playBtn.style.display = 'inline-block';
+                            pauseBtn.style.display = 'none';
+                            isPlaying = false;
+                            isPaused = true;
+                        });
+                        
+                        // Replay button event
+                        replayBtn.addEventListener('click', () => {
+                            writer.hideCharacter();
+                            setTimeout(() => {
+                                writer.animateCharacter({
+                                    onComplete: () => {
+                                        isPlaying = false;
+                                        isPaused = false;
+                                        playBtn.style.display = 'inline-block';
+                                        pauseBtn.style.display = 'none';
+                                    }
+                                });
+                                playBtn.style.display = 'none';
+                                pauseBtn.style.display = 'inline-block';
+                                isPlaying = true;
+                                isPaused = false;
+                            }, 100);
+                        });
+                    });
+                }
+                
+                // Function to handle the toggle character type button
+                function toggleCharacterType() {
+                    isSimplifiedMode = !isSimplifiedMode;
+                    toggleTypeBtn.textContent = isSimplifiedMode ? 'Switch to Traditional' : 'Switch to Simplified';
+                    updateCharacters();
+                }
+
+                // Event listeners for the dropdowns
+                daySelect.addEventListener('change', updateCharacters);
+                charCountSelect.addEventListener('change', () => {
+                    populateDayDropdown();
+                    updateCharacters();
+                });
+
+                // Event listener for the show/hide meanings button
+                toggleMeaningBtn.addEventListener('click', () => {
+                    const meaningElements = charactersContainer.querySelectorAll('.meaning-display');
+                    const isHidden = meaningElements[0]?.classList.contains('hidden');
+                    if (meaningElements.length > 0) {
+                        meaningElements.forEach(el => {
+                            el.classList.toggle('hidden', !isHidden);
+                        });
+                        toggleMeaningBtn.textContent = isHidden ? 'Hide Meanings' : 'Show Meanings';
+                    }
+                });
+
+                // Event listener for the toggle character type button
+                toggleTypeBtn.addEventListener('click', toggleCharacterType);
+
+                // Initial setup on page load
+                populateCharCountDropdown();
+                populateDayDropdown();
+                // Trigger the first character display after the dropdowns are populated
+                updateCharacters();
+                
+            } catch (error) {
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+                
+                // Show error message
+                charactersContainer.innerHTML = `
+                    <div class="col-span-full p-6 bg-red-50 rounded-lg text-red-700">
+                        <h3 class="font-bold text-lg mb-2">Error Loading Data</h3>
+                        <p>${error.message}</p>
+                        <p class="mt-2">Please make sure adjustedCharacters.json is available in the same directory.</p>
+                    </div>
+                `;
+                console.error('Error loading character data:', error);
+            }
+        });
+    </script>
+</body>
+</html>
