@@ -7,32 +7,53 @@
     <!-- Use Inter font from Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-	<link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
-	<link rel="icon" href="favicon-16x16.png" sizes="16x16" type="image/png">
-	<link rel="apple-touch-icon" href="apple-touch-icon.png">
-	<link rel="manifest" href="site.webmanifest">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- HanziWriter library for stroke order animation -->
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.2/dist/hanzi-writer.js"></script>
+    <!-- html2pdf library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            color: #1f2937;
+            background-color: #f8fafc;
+            color: #1e293b;
         }
         /* Style for HanziWriter canvas */
         .character-animation {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             margin: 0 auto;
+        }
+        /* Responsive character animation sizes */
+        @media (min-width: 640px) {
+            .character-animation {
+                width: 110px;
+                height: 110px;
+            }
+        }
+        @media (min-width: 768px) {
+            .character-animation {
+                width: 120px;
+                height: 120px;
+            }
         }
         /* Style for Zhuyin font */
         .zhuyin-display {
-            font-size: 1.25rem;
-            line-height: 1.75rem;
-            font-family: 'Inter', sans-serif; /* Fallback */
+            font-size: 0.875rem;
+            line-height: 1.25;
+            font-family: 'Inter', sans-serif;
+        }
+        @media (min-width: 640px) {
+            .zhuyin-display {
+                font-size: 1rem;
+            }
         }
         .loading-indicator {
             display: none;
@@ -40,23 +61,34 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             z-index: 1000;
+            backdrop-filter: blur(4px);
         }
         .animation-controls {
             display: flex;
-            gap: 8px;
-            margin-top: 12px;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         .control-btn {
-            padding: 6px 12px;
-            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
             border-radius: 6px;
             font-weight: 500;
             transition: all 0.2s;
+            min-width: 60px;
+        }
+        @media (min-width: 640px) {
+            .control-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+                min-width: 70px;
+            }
         }
         .play-btn {
             background-color: #10B981;
@@ -64,6 +96,7 @@
         }
         .play-btn:hover {
             background-color: #059669;
+            transform: translateY(-1px);
         }
         .pause-btn {
             background-color: #F59E0B;
@@ -71,6 +104,7 @@
         }
         .pause-btn:hover {
             background-color: #D97706;
+            transform: translateY(-1px);
         }
         .replay-btn {
             background-color: #3B82F6;
@@ -78,92 +112,350 @@
         }
         .replay-btn:hover {
             background-color: #2563EB;
+            transform: translateY(-1px);
         }
-				/* Logo styling */
-		.logo-container {
-			position: absolute;
-			top: 20px;
-			left: 20px;
-			z-index: 10;
-		}
-		.logo-link {
-			display: flex;
-			align-items: center;
-			text-decoration: none;
-			color: #3B82F6;
-			font-weight: bold;
-			transition: transform 0.2s;
-		}
-		.logo-link:hover {
-			transform: scale(1.05);
-		}
-		.logo-image {
-			width: 150px;
-			height: 150px;
-			margin-right: 30px;
-			border-radius: 8px;
-			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-		}
-		@media (max-width: 640px) {
-			.logo-container {
-				top: 10px;
-				left: 10px;
-			}
-			.logo-text {
-				display: none; /* Hide text on small screens */
-			}
-	}
+        /* Logo styling - UPDATED to be bigger and less button-like */
+        .logo-container {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 1rem;
+        }
+        .logo-image {
+            width: 100px;  /* Increased from 60px */
+            height: 100px; /* Increased from 60px */
+            border-radius: 12px;
+            /* Removed box-shadow to make it less button-like */
+        }
+        @media (min-width: 768px) {
+            .logo-image {
+                width: 120px;  /* Increased from 80px */
+                height: 120px; /* Increased from 80px */
+            }
+        }
+        /* Character box styling */
+        .character-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); 
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            min-height: 280px;
+            width: 100%;
+        }
+        .character-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        /* Grid responsiveness */
+        .characters-grid {
+            display: grid;
+            gap: 1rem;
+            width: 100%;
+        }
+        @media (max-width: 639px) {
+            .characters-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+        }
+        @media (min-width: 640px) and (max-width: 767px) {
+            .characters-grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+        }
+        @media (min-width: 768px) {
+            .characters-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+        }
+        /* Button styling */
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            transition: all 0.3s ease;
+            min-width: 140px;
+            margin: 0.25rem;
+        }
+        @media (min-width: 640px) {
+            .action-btn {
+                padding: 0.875rem 1.75rem;
+                font-size: 1rem;
+                min-width: 160px;
+            }
+        }
+        /* Select dropdown styling */
+        .custom-select {
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        .custom-select:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        @media (min-width: 640px) {
+            .custom-select {
+                padding: 0.875rem 1.25rem;
+                font-size: 1rem;
+                min-width: 220px;
+            }
+        }
+        /* Meaning display */
+        .meaning-display {
+            font-size: 0.75rem;
+            line-height: 1.4;
+            text-align: center;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 6px;
+            border-left: 3px solid #3B82F6;
+        }
+        @media (min-width: 640px) {
+            .meaning-display {
+                font-size: 0.875rem;
+                padding: 0.75rem;
+            }
+        }
+        /* Stroke count styling */
+        .stroke-count {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+        @media (min-width: 640px) {
+            .stroke-count {
+                font-size: 0.875rem;
+            }
+        }
+        /* Worksheet styles - UPDATED */
+        .worksheet-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+        .worksheet-content {
+            background: white;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 90%;
+            width: fit-content;
+        }
+        .worksheet-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+        .worksheet-grid-container {
+            display: grid;
+            border: 1px solid #c8d6ce;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            margin: 1rem auto;
+            width: fit-content;
+        }
+        .worksheet-grid-cell {
+            position: relative;
+            box-sizing: border-box;
+            border: 1px solid #c8d6ce;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .worksheet-grid-cell::before,
+        .worksheet-grid-cell::after {
+            content: '';
+            position: absolute;
+        }
+        .worksheet-grid-cell::before {
+            width: 1px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-image: repeating-linear-gradient(to bottom, #99a29e 0, #99a29e 1px, transparent 1px, transparent 4px);
+        }
+        .worksheet-grid-cell::after {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-image: repeating-linear-gradient(to right, #99a29e 0, #99a29e 1px, transparent 1px, transparent 4px);
+        }
+        .worksheet-zhuyin-cell {
+            width: 16px;
+            height: 50px;
+            border: 1px solid #c8d6ce;
+            box-sizing: border-box;
+        }
+        .worksheet-hide-dotted-lines::before,
+        .worksheet-hide-dotted-lines::after {
+            display: none;
+        }
+        .top-row-character {
+            background-color: #e0f2fe;
+            font-weight: bold;
+            position: relative;
+        }
+        /* Updated traceable character opacity for better visibility */
+        .traceable-character {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .stroke-number {
+            position: absolute;
+            font-size: 8px;
+            font-weight: bold;
+            color: #e53e3e;
+            background: white;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .stroke-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            z-index: 5;
+        }
+        /* Checkbox styling */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+        .checkbox-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #3B82F6;
+        }
+        .checkbox-container label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin: 0;
+        }
+        /* Print-specific styles for worksheet */
+        @media print {
+            .worksheet-grid-cell::before {
+                background-image: repeating-linear-gradient(to bottom, #000 0, #000 1px, transparent 1px, transparent 4px) !important;
+            }
+            .worksheet-grid-cell::after {
+                background-image: repeating-linear-gradient(to right, #000 0, #000 1px, transparent 1px, transparent 4px) !important;
+            }
+            .worksheet-grid-cell {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+        }
     </style>
 </head>
-<body class="p-4 md:p-8 bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="p-4 md:p-6 lg:p-8 bg-slate-50 min-h-screen">
     <!-- Loading indicator -->
-	<!-- Logo/Home Button -->
-	<div class="logo-container">
-		<a href="#" class="logo-link">
-			<img src="ORIGINAL FAVICON.png" alt="Home" class="logo-image">
-			<span class="logo-text"></span>
-		</a>
-	</div>
     <div id="loading-indicator" class="loading-indicator flex flex-col items-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-3"></div>
-        <p class="text-gray-700">Loading character data...</p>
+        <p class="text-gray-700 text-sm md:text-base">Loading character data...</p>
     </div>
 
-    <div class="max-w-5xl w-full p-6 md:p-10 bg-white rounded-2xl shadow-xl space-y-8 text-center">
+    <!-- Worksheet Modal -->
+    <div id="worksheet-modal" class="worksheet-modal">
+        <div class="worksheet-content">
+            <div class="worksheet-controls">
+                <div class="input-group">
+                    <label for="worksheet-rows" class="block text-sm font-medium text-gray-700 mb-1">Number of Rows:</label>
+                    <select id="worksheet-rows" class="custom-select">
+                        <option value="5">5 Rows</option>
+                        <option value="8" selected>8 Rows</option>
+                        <option value="10">10 Rows</option>
+                        <option value="12">12 Rows</option>
+                    </select>
+                </div>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="add-characters-checkbox" checked>
+                    <label for="add-characters-checkbox">Add Characters</label>
+                </div>
+                <div class="flex gap-2 flex-wrap justify-center">
+                    <button id="download-worksheet-btn" class="action-btn bg-blue-500 hover:bg-blue-600">Download PDF</button>
+                    <button id="close-worksheet-btn" class="action-btn bg-gray-500 hover:bg-gray-600">Close</button>
+                </div>
+            </div>
+            <div id="worksheet-container"></div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-xl space-y-6 md:space-y-8 text-center">
+        <!-- Logo/Home Button - MOVED INSIDE MAIN CONTAINER -->
+        <div class="logo-container">
+            <!-- Removed link wrapper to make it less button-like -->
+            <img src="ORIGINAL FAVICON.png" alt="Chinese Character Study" class="logo-image">
+        </div>
+
         <!-- Title -->
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Traditional & Simplified Chinese Character Study</h1>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
+            Traditional & Simplified<br class="sm:hidden"> Chinese Character Study
+        </h1>
         
         <!-- Dropdowns for selecting the day and characters per day -->
-        <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <div class="flex flex-col items-center space-y-2">
-                <label for="char-count-select" class="text-lg font-medium text-gray-700">Characters per Day:</label>
-                <select id="char-count-select" class="w-full max-w-sm px-4 py-2 text-lg rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all duration-200">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+            <div class="flex flex-col items-center space-y-2 w-full sm:w-auto">
+                <label for="char-count-select" class="text-sm sm:text-base font-medium text-gray-700">Characters per Day:</label>
+                <select id="char-count-select" class="custom-select w-full sm:w-auto">
                     <!-- Options will be populated by JavaScript -->
                 </select>
             </div>
-            <div class="flex flex-col items-center space-y-2">
-                <label for="day-select" class="text-lg font-medium text-gray-700">Select a Day:</label>
-                <select id="day-select" class="w-full max-w-sm px-4 py-2 text-lg rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all duration-200">
+            <div class="flex flex-col items-center space-y-2 w-full sm:w-auto">
+                <label for="day-select" class="text-sm sm:text-base font-medium text-gray-700">Select a Day:</label>
+                <select id="day-select" class="custom-select w-full sm:w-auto">
                     <option value="" disabled selected>-- Choose a Day --</option>
                 </select>
             </div>
         </div>
 
         <!-- Container for characters and meanings -->
-        <div id="characters-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 justify-items-center p-4 border-2 border-dashed border-gray-300 rounded-xl transition-all duration-300">
+        <div id="characters-container" class="characters-grid p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
             <!-- Character boxes will be populated here by JavaScript -->
         </div>
 
         <!-- Buttons to show/hide meanings and toggle character type -->
-        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
-            <button id="toggle-meaning-btn" class="px-6 py-3 font-semibold text-white bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" disabled>
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 mt-4">
+            <button id="toggle-meaning-btn" class="action-btn bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 Show Meanings
             </button>
-            <button id="toggle-type-btn" class="px-6 py-3 font-semibold text-white bg-indigo-500 rounded-full shadow-lg hover:bg-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" disabled>
+            <button id="toggle-type-btn" class="action-btn bg-indigo-500 text-white hover:bg-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 Switch to Simplified
             </button>
+            <button id="worksheet-btn" class="action-btn bg-green-500 text-white hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                Generate Worksheet
+            </button>
         </div>
-        
     </div>
 
     <script>
@@ -180,18 +472,7 @@
                 }
                 
                 const allCharacters = await response.json();
-                
-                // If you want to process stroke data further, you can still do it here.
-                // Example: (currently just passes through)
-                const adjustedCharacters = allCharacters.map(entry => ({
-                  char: entry.char,
-                  simplifiedChar: entry.simplifiedChar,
-                  pinyin: entry.pinyin,
-                  zhuyin: entry.zhuyin,
-                  TradStrokeCount: entry.TradStrokeCount,
-                  SimpStrokeCount: entry.SimpStrokeCount,
-                  meaning: entry.meaning
-                }));
+                const adjustedCharacters = allCharacters;
 
                 // Hide loading indicator
                 loadingIndicator.style.display = 'none';
@@ -202,10 +483,19 @@
                 const charactersContainer = document.getElementById('characters-container');
                 const toggleMeaningBtn = document.getElementById('toggle-meaning-btn');
                 const toggleTypeBtn = document.getElementById('toggle-type-btn');
+                const worksheetBtn = document.getElementById('worksheet-btn');
+                const worksheetModal = document.getElementById('worksheet-modal');
+                const worksheetContainer = document.getElementById('worksheet-container');
+                const downloadWorksheetBtn = document.getElementById('download-worksheet-btn');
+                const closeWorksheetBtn = document.getElementById('close-worksheet-btn');
+                const worksheetRowsSelect = document.getElementById('worksheet-rows');
+                const addCharactersCheckbox = document.getElementById('add-characters-checkbox');
 
                 // State variables
                 let isSimplifiedMode = false;
-                let writers = []; // Store HanziWriter instances
+                let writers = [];
+                let currentCharacters = [];
+                let strokeData = {}; // Store stroke data for characters
                 
                 // Function to dynamically populate the day dropdown
                 function populateDayDropdown() {
@@ -228,55 +518,90 @@
                         option.textContent = `${i} Character${i > 1 ? 's' : ''}`;
                         charCountSelect.appendChild(option);
                     }
-                    // Set default to 5
                     charCountSelect.value = 5;
                 }
 
-                // Function to update the character display based on the selected day and character count
+                // Function to get stroke data for a character
+                async function getStrokeData(char) {
+                    if (strokeData[char]) return strokeData[char];
+                    
+                    try {
+                        const writer = HanziWriter.create('temp-canvas', char, {
+                            width: 100,
+                            height: 100,
+                            showOutline: true
+                        });
+                        
+                        // Wait for character to load
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                        const strokes = writer.getScalingTransform().strokes;
+                        strokeData[char] = strokes;
+                        return strokes;
+                    } catch (error) {
+                        console.error('Error getting stroke data:', error);
+                        return [];
+                    }
+                }
+
+                // Function to add stroke order indicators
+                function addStrokeOrderIndicators(cell, char, strokes) {
+                    if (!strokes || strokes.length === 0) return;
+                    
+                    // Make character traceable (semi-transparent)
+                    cell.classList.add('traceable-character');
+                    
+                    // Add stroke numbers and arrows (simplified version)
+                    strokes.forEach((stroke, index) => {
+                        // For simplicity, we'll just add numbers at the start of each stroke
+                        const strokePath = stroke;
+                        if (strokePath && strokePath.length > 0) {
+                            const firstPoint = strokePath[0];
+                            if (firstPoint && firstPoint.x !== undefined && firstPoint.y !== undefined) {
+                                const numberEl = document.createElement('div');
+                                numberEl.className = 'stroke-number';
+                                numberEl.textContent = index + 1;
+                                numberEl.style.left = `${firstPoint.x * 40 + 5}px`;
+                                numberEl.style.top = `${firstPoint.y * 40 + 5}px`;
+                                cell.appendChild(numberEl);
+                            }
+                        }
+                    });
+                }
+
+                // Function to update the character display
                 function updateCharacters() {
                     const selectedDay = daySelect.value;
                     const charCount = parseInt(charCountSelect.value, 10);
-                    const dayNumber = selectedDay ? parseInt(selectedDay.replace('day', ''), 10) : 1; // Default to Day 1 if no day is selected
+                    const dayNumber = selectedDay ? parseInt(selectedDay.replace('day', ''), 10) : 1;
                     const startIndex = (dayNumber - 1) * charCount;
-                    const charactersToDisplay = adjustedCharacters.slice(startIndex, startIndex + charCount);
+                    currentCharacters = adjustedCharacters.slice(startIndex, startIndex + charCount);
 
                     // Clear old content and reset writers
                     charactersContainer.innerHTML = '';
                     writers = [];
 
                     // Disable buttons if no characters are found
-                    const areButtonsDisabled = charactersToDisplay.length === 0;
+                    const areButtonsDisabled = currentCharacters.length === 0;
                     toggleMeaningBtn.disabled = areButtonsDisabled;
                     toggleTypeBtn.disabled = areButtonsDisabled;
+                    worksheetBtn.disabled = areButtonsDisabled;
                     
                     if (areButtonsDisabled) {
-                        charactersContainer.innerHTML = '<p class="text-gray-500">No characters found for this day with the selected count.</p>';
+                        charactersContainer.innerHTML = '<p class="text-gray-500 text-center col-span-full py-8">No characters found for this day with the selected count.</p>';
                         return;
                     }
 
-                    // Update the grid columns based on the number of characters
-                    let gridClass;
-                    if (charCount <= 2) {
-                        gridClass = 'grid-cols-1';
-                    } else if (charCount <= 4) {
-                        gridClass = 'grid-cols-2';
-                    } else if (charCount <= 6) {
-                        gridClass = 'grid-cols-3';
-                    } else {
-                        gridClass = 'grid-cols-5';
-                    }
-                    charactersContainer.className = `grid ${gridClass} gap-4 justify-items-center p-4 border-2 border-dashed border-gray-300 rounded-xl transition-all duration-300`;
-
-                    charactersToDisplay.forEach((character, index) => {
+                    currentCharacters.forEach((character, index) => {
                         const charToRender = isSimplifiedMode ? character.simplifiedChar : character.char;
                         const containerId = `character-writer-${startIndex + index}`;
 
                         const characterDiv = document.createElement('div');
-                        characterDiv.className = 'character-box flex flex-col items-center p-4 bg-gray-50 rounded-xl shadow-md transition-all duration-300 transform hover:scale-105';
+                        characterDiv.className = 'character-box';
                         
-                        // Stroke count display, now using the value from the array
+                        // Stroke count display
                         const strokeCountDiv = document.createElement('div');
-                        strokeCountDiv.className = 'text-sm font-semibold text-gray-400';
+                        strokeCountDiv.className = 'stroke-count';
                         strokeCountDiv.textContent = `Strokes: ${isSimplifiedMode ? character.SimpStrokeCount : character.TradStrokeCount}`;
 
                         // HanziWriter animation container
@@ -284,42 +609,39 @@
                         animationDiv.className = 'character-animation';
                         animationDiv.id = containerId;
                         
-                        // Pinyin and Zhuyin display in a single line
+                        // Pinyin and Zhuyin display
                         const pronunciationDiv = document.createElement('div');
-                        pronunciationDiv.className = 'text-sm text-gray-400 mt-1 flex items-center space-x-2';
+                        pronunciationDiv.className = 'text-sm text-gray-600 mt-2 flex flex-col items-center';
                         
                         const pinyinSpan = document.createElement('span');
-                        pinyinSpan.className = 'pinyin-display';
+                        pinyinSpan.className = 'font-semibold';
                         pinyinSpan.textContent = character.pinyin;
                         
                         const zhuyinSpan = document.createElement('span');
-                        zhuyinSpan.className = 'zhuyin-display';
-                        zhuyinSpan.textContent = `(${character.zhuyin})`;
+                        zhuyinSpan.className = 'zhuyin-display text-gray-500';
+                        zhuyinSpan.textContent = character.zhuyin;
                         
                         pronunciationDiv.appendChild(pinyinSpan);
                         pronunciationDiv.appendChild(zhuyinSpan);
 
-                        // Meaning display (starts hidden)
+                        // Meaning display
                         const meaningDiv = document.createElement('div');
-                        meaningDiv.className = 'meaning-display text-sm text-gray-600 mt-1 hidden';
+                        meaningDiv.className = 'meaning-display hidden';
                         meaningDiv.textContent = character.meaning;
                         
-                        // Animation controls container
+                        // Animation controls
                         const controlsDiv = document.createElement('div');
                         controlsDiv.className = 'animation-controls';
                         
-                        // Play button
                         const playBtn = document.createElement('button');
                         playBtn.className = 'control-btn play-btn';
                         playBtn.textContent = 'Play';
                         
-                        // Pause button
                         const pauseBtn = document.createElement('button');
                         pauseBtn.className = 'control-btn pause-btn';
                         pauseBtn.textContent = 'Pause';
                         pauseBtn.style.display = 'none';
                         
-                        // Replay button
                         const replayBtn = document.createElement('button');
                         replayBtn.className = 'control-btn replay-btn';
                         replayBtn.textContent = 'Replay';
@@ -328,43 +650,38 @@
                         controlsDiv.appendChild(pauseBtn);
                         controlsDiv.appendChild(replayBtn);
                         
-                        // Append elements to the character box
+                        // Append elements
                         characterDiv.appendChild(strokeCountDiv);
                         characterDiv.appendChild(animationDiv);
                         characterDiv.appendChild(pronunciationDiv);
                         characterDiv.appendChild(meaningDiv);
                         characterDiv.appendChild(controlsDiv);
                         
-                        // Append the complete box to the container
                         charactersContainer.appendChild(characterDiv);
                         
-                        // Initialize HanziWriter for stroke order animation
+                        // Initialize HanziWriter
                         const writer = HanziWriter.create(animationDiv.id, charToRender, {
-                            width: 120,
-                            height: 120,
+                            width: 100,
+                            height: 100,
                             strokeAnimationSpeed: 1,
                             showOutline: true,
                             delayBetweenStrokes: 500
                         });
                         
-                        // Store the writer instance for later use
                         writers.push(writer);
                         
-                        // Animation state
                         let isPlaying = false;
                         let isPaused = false;
                         
-                        // Play button event
+                        // Event handlers for animation controls
                         playBtn.addEventListener('click', () => {
                             if (isPaused) {
-                                // Resume animation
                                 writer.resumeAnimation();
                                 playBtn.style.display = 'none';
                                 pauseBtn.style.display = 'inline-block';
                                 isPlaying = true;
                                 isPaused = false;
                             } else {
-                                // Start animation
                                 writer.animateCharacter({
                                     onComplete: () => {
                                         isPlaying = false;
@@ -379,7 +696,6 @@
                             }
                         });
                         
-                        // Pause button event
                         pauseBtn.addEventListener('click', () => {
                             writer.pauseAnimation();
                             playBtn.style.display = 'inline-block';
@@ -388,7 +704,6 @@
                             isPaused = true;
                         });
                         
-                        // Replay button event
                         replayBtn.addEventListener('click', () => {
                             writer.hideCharacter();
                             setTimeout(() => {
@@ -416,14 +731,274 @@
                     updateCharacters();
                 }
 
-                // Event listeners for the dropdowns
+                // Function to generate worksheet
+                async function generateWorksheet() {
+                    const rows = parseInt(worksheetRowsSelect.value);
+                    const cols = currentCharacters.length;
+                    const addCharacters = addCharactersCheckbox.checked;
+                    
+                    if (cols === 0) {
+                        alert('Please select characters first!');
+                        return;
+                    }
+
+                    // Clear existing worksheet
+                    worksheetContainer.innerHTML = '';
+                    
+                    // Set grid template columns
+                    let gridTemplateColumns = '';
+                    for (let i = 0; i < cols; i++) {
+                        gridTemplateColumns += '50px 16px ';
+                    }
+                    worksheetContainer.style.gridTemplateColumns = gridTemplateColumns.trim();
+                    worksheetContainer.className = 'worksheet-grid-container';
+                    
+                    // Create grid cells
+                    for (let r = 0; r < rows; r++) {
+                        for (let c = 0; c < cols; c++) {
+                            // Create character cell
+                            const charCell = document.createElement('div');
+                            charCell.className = 'worksheet-grid-cell';
+                            
+                            // If it's the top row and addCharacters is checked, add the character with stroke order
+                            if (r === 0 && addCharacters) {
+                                const charToRender = isSimplifiedMode ? currentCharacters[c].simplifiedChar : currentCharacters[c].char;
+                                charCell.textContent = charToRender;
+                                charCell.classList.add('top-row-character');
+                                
+                                // Get stroke data and add indicators
+                                try {
+                                    const strokes = await getStrokeData(charToRender);
+                                    addStrokeOrderIndicators(charCell, charToRender, strokes);
+                                } catch (error) {
+                                    console.error('Error adding stroke indicators:', error);
+                                }
+                            }
+                            
+                            worksheetContainer.appendChild(charCell);
+
+                            // Create Zhuyin cell
+                            const zhuyinCell = document.createElement('div');
+                            zhuyinCell.className = 'worksheet-zhuyin-cell';
+                            worksheetContainer.appendChild(zhuyinCell);
+                        }
+                    }
+                }
+
+                // Function to download worksheet as PDF - DRAW DIRECTLY ON CANVAS THEN ADD TO PDF
+                async function downloadWorksheet() {
+                    if (worksheetContainer.children.length === 0) {
+                        alert('Please generate the worksheet first!');
+                        return;
+                    }
+
+                    // Determine rows and cols from the worksheet DOM
+                    const rows = parseInt(worksheetRowsSelect.value, 10) || 0;
+                    if (!rows || rows <= 0) {
+                        alert('Invalid row count.');
+                        return;
+                    }
+
+                    const totalChildren = worksheetContainer.children.length;
+                    // Each logical column produces 2 DOM children per row (cell + zhuyin), so:
+                    const cols = Math.round(totalChildren / (rows * 2));
+                    if (!cols || cols <= 0) {
+                        alert('Could not determine columns for PDF generation.');
+                        return;
+                    }
+
+                    // Measure cell sizes directly from DOM (trusted source)
+                    const sampleCharCell = worksheetContainer.querySelector('.worksheet-grid-cell');
+                    const sampleZhuyinCell = worksheetContainer.querySelector('.worksheet-zhuyin-cell');
+                    if (!sampleCharCell || !sampleZhuyinCell) {
+                        alert('Worksheet cells are missing; regenerate the worksheet and try again.');
+                        return;
+                    }
+
+                    const charCellStyle = window.getComputedStyle(sampleCharCell);
+                    const zhuyinCellStyle = window.getComputedStyle(sampleZhuyinCell);
+
+                    const cellWidthPx = parseFloat(charCellStyle.width) || 50;
+                    const cellHeightPx = parseFloat(charCellStyle.height) || 50;
+                    const zhuyinWidthPx = parseFloat(zhuyinCellStyle.width) || 16;
+
+                    const totalWidthPx = Math.ceil(cols * (cellWidthPx + zhuyinWidthPx));
+                    const totalHeightPx = Math.ceil(rows * cellHeightPx);
+
+                    // Wait for fonts to be ready so canvas draws the correct CJK glyphs
+                    try {
+                        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+                    } catch (e) {
+                        // continue even if fonts.ready isn't available
+                    }
+
+                    // Conversion helpers
+                    const pxToMm = 0.2645833333; // 1px ~= 0.264583333 mm at 96dpi
+                    const pageWidthMm = 210;
+                    const pageHeightMm = 297;
+                    const marginMm = 10;
+                    const availableWidthMm = pageWidthMm - marginMm * 2;
+                    const availableHeightMm = pageHeightMm - marginMm * 2;
+
+                    // Compute raw image size in mm
+                    const rawWidthMm = totalWidthPx * pxToMm;
+                    const rawHeightMm = totalHeightPx * pxToMm;
+
+                    // Determine scale to fit available area (only downscale to fit)
+                    let scalePdf = Math.min(1, availableWidthMm / rawWidthMm, availableHeightMm / rawHeightMm);
+                    if (!isFinite(scalePdf) || scalePdf <= 0) scalePdf = 1;
+
+                    const finalImageWidthMm = rawWidthMm * scalePdf;
+                    const finalImageHeightMm = rawHeightMm * scalePdf;
+
+                    // Create high-DPI canvas to keep quality
+                    const deviceRatio = Math.min(window.devicePixelRatio || 1, 2);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.ceil(totalWidthPx * deviceRatio);
+                    canvas.height = Math.ceil(totalHeightPx * deviceRatio);
+                    canvas.style.width = `${totalWidthPx}px`;
+                    canvas.style.height = `${totalHeightPx}px`;
+                    const ctx = canvas.getContext('2d');
+                    ctx.scale(deviceRatio, deviceRatio);
+
+                    // Draw background
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, totalWidthPx, totalHeightPx);
+
+                    // Draw grid cells and dotted midlines to mimic preview
+                    for (let r = 0; r < rows; r++) {
+                        for (let c = 0; c < cols; c++) {
+                            const x = c * (cellWidthPx + zhuyinWidthPx);
+                            const y = r * cellHeightPx;
+
+                            // draw outer border for main char cell
+                            ctx.strokeStyle = '#c8d6ce';
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(x + 0.5, y + 0.5, cellWidthPx - 1, cellHeightPx - 1);
+
+                            // draw vertical dotted center line in main cell (approximate repeating-linear-gradient)
+                            ctx.strokeStyle = '#99a29e';
+                            ctx.lineWidth = 0.8;
+                            const centerX = x + cellWidthPx / 2;
+                            for (let yy = y + 2; yy < y + cellHeightPx; yy += 5) {
+                                ctx.beginPath();
+                                ctx.moveTo(centerX, yy);
+                                ctx.lineTo(centerX, Math.min(yy + 1, y + cellHeightPx - 1));
+                                ctx.stroke();
+                            }
+
+                            // draw horizontal dotted center line
+                            const centerY = y + cellHeightPx / 2;
+                            for (let xx = x + 2; xx < x + cellWidthPx; xx += 5) {
+                                ctx.beginPath();
+                                ctx.moveTo(xx, centerY);
+                                ctx.lineTo(Math.min(xx + 1, x + cellWidthPx - 1), centerY);
+                                ctx.stroke();
+                            }
+
+                            // draw zhuyin cell
+                            const zx = x + cellWidthPx;
+                            ctx.strokeStyle = '#c8d6ce';
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(zx + 0.5, y + 0.5, zhuyinWidthPx - 1, cellHeightPx - 1);
+                        }
+                    }
+
+                    // Draw characters placed in the top row (the preview puts characters only in row 0 if addCharacters checked)
+                    // Map DOM top-row cells to canvas positions to ensure exact placement of characters and stroke numbers.
+                    for (let colIndex = 0; colIndex < cols; colIndex++) {
+                        // The child order for a row is: [charCell, zhuyinCell, charCell, zhuyinCell, ...]
+                        // For row 0, the first row's children indices are 0..(cols*2 - 1)
+                        const domIndex = colIndex * 2;
+                        const charCellDom = worksheetContainer.children[domIndex];
+                        if (!charCellDom) continue;
+
+                        const charText = (charCellDom.classList.contains('top-row-character')) ? charCellDom.textContent.trim() : '';
+                        if (charText) {
+                            const x = colIndex * (cellWidthPx + zhuyinWidthPx);
+                            const y = 0;
+
+                            // Use a font size relative to cell height so characters look like preview
+                            const targetFontSize = Math.min(Math.floor(cellHeightPx * 0.72), 56);
+                            // Use a list of CJK-capable fonts with fallbacks — browser will pick appropriate glyphs.
+                            ctx.fillStyle = '#000000';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.font = `bold ${targetFontSize}px Inter, "Noto Sans CJK TC", "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", sans-serif`;
+
+                            // Draw character centered
+                            ctx.fillText(charText, x + cellWidthPx / 2, y + cellHeightPx / 2 + 2);
+
+                            // replicate stroke-number small circles positioned in DOM
+                            const numberEls = charCellDom.querySelectorAll('.stroke-number');
+                            numberEls.forEach(numEl => {
+                                // use offset within cell for exact pixel placement
+                                const left = numEl.offsetLeft || parseFloat(numEl.style.left) || 0;
+                                const top = numEl.offsetTop || parseFloat(numEl.style.top) || 0;
+                                const numberText = (numEl.textContent || '').trim();
+
+                                const radius = 6;
+                                const cx = x + left + radius;
+                                const cy = y + top + radius;
+
+                                // small white circle background
+                                ctx.fillStyle = '#ffffff';
+                                ctx.beginPath();
+                                ctx.arc(cx, cy, radius + 0.2, 0, Math.PI * 2);
+                                ctx.fill();
+
+                                // draw number text in red
+                                ctx.fillStyle = '#e53e3e';
+                                ctx.font = '8px Arial, Helvetica, sans-serif';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(numberText, cx, cy);
+                            });
+                        }
+                    }
+
+                    // Convert canvas to image and place into PDF, scaled to fit page with margins
+                    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+                    // Create jsPDF document - FIXED: Properly access jsPDF
+                    let doc;
+                    try {
+                        // Try to access jsPDF from the html2pdf bundle
+                        if (typeof window.jspdf !== 'undefined') {
+                            // html2pdf bundles jsPDF and exposes it as window.jspdf
+                            doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                        } else if (typeof window.jsPDF !== 'undefined') {
+                            // Direct jsPDF library
+                            doc = new window.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                        } else {
+                            // Last resort: try to get it from html2pdf function
+                            const html2pdf = window.html2pdf;
+                            if (html2pdf && html2pdf.jsPDF) {
+                                doc = new html2pdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                            } else {
+                                throw new Error('jsPDF not available');
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Could not create jsPDF instance:', err);
+                        alert('PDF generation failed: jsPDF not available.');
+                        return;
+                    }
+
+                    const x_mm = marginMm + Math.max(0, (availableWidthMm - finalImageWidthMm) / 2);
+                    const y_mm = marginMm + Math.max(0, (availableHeightMm - finalImageHeightMm) / 2);
+
+                    doc.addImage(imgData, 'JPEG', x_mm, y_mm, finalImageWidthMm, finalImageHeightMm);
+                    doc.save('chinese-character-worksheet.pdf');
+                }
+
+                // Event listeners
                 daySelect.addEventListener('change', updateCharacters);
                 charCountSelect.addEventListener('change', () => {
                     populateDayDropdown();
                     updateCharacters();
                 });
 
-                // Event listener for the show/hide meanings button
                 toggleMeaningBtn.addEventListener('click', () => {
                     const meaningElements = charactersContainer.querySelectorAll('.meaning-display');
                     const isHidden = meaningElements[0]?.classList.contains('hidden');
@@ -435,25 +1010,55 @@
                     }
                 });
 
-                // Event listener for the toggle character type button
                 toggleTypeBtn.addEventListener('click', toggleCharacterType);
 
-                // Initial setup on page load
+                worksheetBtn.addEventListener('click', async () => {
+                    if (currentCharacters.length === 0) {
+                        alert('Please select characters first!');
+                        return;
+                    }
+                    worksheetModal.style.display = 'block';
+                    await generateWorksheet();
+                });
+
+                // Auto-generate worksheet when rows selection changes
+                worksheetRowsSelect.addEventListener('change', async () => {
+                    if (worksheetModal.style.display === 'block') {
+                        await generateWorksheet();
+                    }
+                });
+
+                // Auto-generate worksheet when checkbox state changes
+                addCharactersCheckbox.addEventListener('change', async () => {
+                    if (worksheetModal.style.display === 'block') {
+                        await generateWorksheet();
+                    }
+                });
+
+                downloadWorksheetBtn.addEventListener('click', downloadWorksheet);
+                closeWorksheetBtn.addEventListener('click', () => {
+                    worksheetModal.style.display = 'none';
+                });
+
+                // Close modal when clicking outside
+                worksheetModal.addEventListener('click', (e) => {
+                    if (e.target === worksheetModal) {
+                        worksheetModal.style.display = 'none';
+                    }
+                });
+
+                // Initial setup
                 populateCharCountDropdown();
                 populateDayDropdown();
-                // Trigger the first character display after the dropdowns are populated
                 updateCharacters();
                 
             } catch (error) {
-                // Hide loading indicator
                 loadingIndicator.style.display = 'none';
-                
-                // Show error message
                 charactersContainer.innerHTML = `
-                    <div class="col-span-full p-6 bg-red-50 rounded-lg text-red-700">
+                    <div class="col-span-full p-6 bg-red-50 rounded-lg text-red-700 text-center">
                         <h3 class="font-bold text-lg mb-2">Error Loading Data</h3>
                         <p>${error.message}</p>
-                        <p class="mt-2">Please make sure adjustedCharacters.json is available in the same directory.</p>
+                        <p class="mt-2 text-sm">Please make sure adjustedCharacters.json is available in the same directory.</p>
                     </div>
                 `;
                 console.error('Error loading character data:', error);

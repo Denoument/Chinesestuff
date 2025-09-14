@@ -1,47 +1,104 @@
-Chinese Character Lookup & Stroke Order
-This is a web-based tool for looking up Chinese characters by Pinyin, Zhuyin, or the character itself. It provides detailed information and an animated stroke-order guide for each character, helping users learn to write them correctly.
+---
 
-Key Features
-Multilingual Search: Look up characters using Pinyin, Zhuyin (Bopomofo), or the Chinese character directly. The search is not case-sensitive.
+## Usage Guide
 
-Stroke Order Animation: Watch a step-by-step animation of how each character is written.
+### Basic Navigation
+* **Select Study Parameters:**
+    * Choose characters per day (1-10)
+    * Select specific day from dropdown
+    * Toggle between Traditional/Simplified mode
+* **Character Interaction:**
+    * Click character animation controls to see stroke order
+    * Use "Show Meanings" to reveal/hide definitions
+    * Study pronunciation with Pinyin and Zhuyin displays
+* **Worksheet Generation:**
+    * Click "Generate Worksheet" after selecting characters
+    * Choose number of rows (5, 8, 10, or 12)
+    * Toggle "Add Characters" checkbox to include/exclude reference characters
+    * Download as PDF for printing
 
-Play/Pause/Resume Controls: Control the animation playback to study each stroke at your own pace.
+### Character Data Format
+The application expects `adjustedCharacters.json` with the following structure:
+```json
+[
+  {
+    "char": "傳",
+    "simplifiedChar": "传",
+    "pinyin": "chuan2",
+    "zhuyin": "ㄔㄨㄢˊ",
+    "TradStrokeCount": 13,
+    "SimpStrokeCount": 6,
+    "meaning": "to transmit, to summon",
+    "pinyinTone": "chuán",
+    "unicode": "U+50B3",
+    "radical": "人",
+    "frequency": "common",
+    "hskLevel": 4
+  }
+]
+## Customization
 
-Traditional & Simplified Toggle: Easily switch between the Traditional and Simplified versions of a character to see the differences.
+### Adding New Characters
+-   Add characters to `characters.txt` (one per line)
+-   The system will automatically process and include them in the study sequence
 
-Detailed Information: Displays the character's stroke count, Pinyin, Zhuyin, and English meaning.
+### Modifying Worksheet Layout
+-   Edit the CSS variables in the stylesheet to adjust:
+    -   Cell sizes (`50px` for characters, `16px` for Zhuyin)
+    -   Grid spacing and borders
+    -   PDF output formatting
 
-Dependencies
-This app is built with simple web technologies and has a few external dependencies:
+### Styling Changes
+-   The app uses Tailwind CSS with custom styles. Modify the `<style>` section in `index.html` for:
+    -   Color schemes
+    -   Font sizes
+    -   Layout adjustments
+    -   Animation styles
 
-HTML, CSS, JavaScript: The core structure, styling, and functionality of the app.
+---
 
-Tailwind CSS: Used for all of the modern, responsive styling.
+## Technical Details
 
-HanziWriter.js: A powerful JavaScript library that handles the Chinese character rendering and stroke-order animations.
+### Built With
+-   **Frontend:** HTML5, CSS3, JavaScript (ES6+)
+-   **Styling:** Tailwind CSS + Custom CSS
+-   **Character Animation:** HanziWriter library
+-   **PDF Generation:** html2pdf.js
+-   **Font:** Google Fonts (Inter)
+-   **Icons:** Custom favicon set
 
-adjustedCharacters.json: A local JSON file containing the character data (Pinyin, Zhuyin, meanings, and stroke counts) for the app to function. You must have this file in the same directory as the HTML file.
+### Browser Support
+-   Chrome 70+
+-   Firefox 65+
+-   Safari 12+
+-   Edge 79+
 
-How to Use
-Clone or Download: Save the index.html and the adjustedCharacters.json files to the same directory on your computer.
+### Performance Features
+-   Lazy loading of character data
+-   Efficient stroke animation rendering
+-   Optimized PDF generation
+-   Responsive image handling
 
-Run a Local Server: Due to browser security restrictions, you cannot directly open the index.html file and access the local JSON data. You must serve the files using a local web server.
+---
 
-Using Python: If you have Python installed, navigate to the directory in your terminal and run one of the following commands:
+## Troubleshooting
 
-For Python 3: python3 -m http.server
+### Common Issues
+-   **Character data not loading**
+    -   Ensure `adjustedCharacters.json` exists in the same directory
+    -   Check browser console for fetch errors
+-   **PDF generation fails**
+    -   Allow pop-ups for the site
+    -   Ensure sufficient memory for large worksheets
+-   **Animations not working**
+    -   Check internet connection (HanziWriter loads from CDN)
+    -   Verify browser supports Canvas API
+-   **Mobile display issues**
+    -   Use latest browser version
+    -   Ensure viewport meta tag is respected
 
-For Python 2: python -m SimpleHTTPServer
-
-Using Node.js: If you have Node.js installed, you can install a simple server package with npm install -g http-server, then run http-server in the directory.
-
-Open in Browser: After starting the server, open your web browser and navigate to http://localhost:8000 (or the address shown by your server).
-
-Search: Use the search bar to type in a query. You can use Pinyin (e.g., hao), Zhuyin (e.g., ㄏㄠˇ), or the character itself (e.g., 好).
-
-Explore:
-
-Click the Play Animation button to see the stroke order. This button will change to Pause and then Resume as needed.
-
-Use the Switch to Simplified/Traditional button to toggle between the two character forms.
+### Debug Mode
+-   Open browser developer tools (F12) to see:
+    -   Character loading status
+    -   Animation performance
+    -   PDF generation logs
