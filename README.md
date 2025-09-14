@@ -40,6 +40,7 @@ The application expects `adjustedCharacters.json` with the following structure:
     "hskLevel": 4
   }
 ]
+```
 ## Customization
 
 ### Adding New Characters
