@@ -1,4 +1,7 @@
 ---
+title: Chinese Character Learning App
+description: Usage guide and technical documentation
+---
 
 ## Usage Guide
 
@@ -19,6 +22,7 @@
 
 ### Character Data Format
 The application expects `adjustedCharacters.json` with the following structure:
+
 ```json
 [
   {
