@@ -18,12 +18,21 @@
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.2/dist/hanzi-writer.js"></script>
     <!-- html2pdf library for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
             color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .main-content {
+            flex: 1 0 auto;
+        }
+        footer {
+            flex-shrink: 0;
         }
         /* Style for HanziWriter canvas */
         .character-animation {
@@ -114,23 +123,30 @@
             background-color: #2563EB;
             transform: translateY(-1px);
         }
-        /* Logo styling - UPDATED to be bigger and less button-like */
-        .logo-container {
+        /* Logo and title alignment */
+        .header-container {
             display: flex;
-            justify-content: flex-start;
-            margin-bottom: 1rem;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+            padding: 0.5rem;
         }
         .logo-image {
-            width: 100px;  /* Increased from 60px */
-            height: 100px; /* Increased from 60px */
+            width: 80px;
+            height: 80px;
             border-radius: 12px;
-            /* Removed box-shadow to make it less button-like */
+            object-fit: contain;
         }
         @media (min-width: 768px) {
             .logo-image {
-                width: 120px;  /* Increased from 80px */
-                height: 120px; /* Increased from 80px */
+                width: 100px;
+                height: 100px;
             }
+        }
+        .title-container {
+            text-align: center;
         }
         /* Character box styling */
         .character-box {
@@ -238,7 +254,7 @@
                 font-size: 0.875rem;
             }
         }
-        /* Worksheet styles - UPDATED */
+        /* Worksheet styles */
         .worksheet-modal {
             display: none;
             position: fixed;
@@ -319,7 +335,6 @@
             font-weight: bold;
             position: relative;
         }
-        /* Updated traceable character opacity for better visibility */
         .traceable-character {
             opacity: 0.6;
             pointer-events: none;
@@ -376,87 +391,338 @@
                 color-adjust: exact;
             }
         }
+        /* New styles for paper controls */
+        .paper-controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+        .paper-control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .paper-control-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        .custom-input {
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        .custom-input:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .preview-text {
+            font-size: 0.875rem;
+            background-color: #f1f5f9;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #3B82F6;
+        }
+        .radio-option label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin: 0;
+        }
+        /* Footer Styles */
+        .footer {
+            background-color: #1e293b;
+            color: #cbd5e1;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 768px) {
+            .footer-content {
+                grid-template-columns: 2fr 1fr 1fr;
+            }
+        }
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .footer-logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+        .footer-heading {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        .footer-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: white;
+        }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid #334155;
+            font-size: 0.875rem;
+        }
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+        .social-links a {
+            color: #cbd5e1;
+            transition: color 0.2s;
+        }
+        .social-links a:hover {
+            color: white;
+        }
+        .donate-btn {
+            display: inline-block;
+            background-color: #10b981;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .donate-btn:hover {
+            background-color: #059669;
+        }
     </style>
 </head>
-<body class="p-4 md:p-6 lg:p-8 bg-slate-50 min-h-screen">
-    <!-- Loading indicator -->
-    <div id="loading-indicator" class="loading-indicator flex flex-col items-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-3"></div>
-        <p class="text-gray-700 text-sm md:text-base">Loading character data...</p>
-    </div>
+<body class="p-4 sm:p-6 md:p-8 bg-slate-50 min-h-screen">
+    <div class="main-content">
+        <!-- Loading indicator -->
+        <div id="loading-indicator" class="loading-indicator flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-3"></div>
+            <p class="text-gray-700 text-sm sm:text-base">Loading character data...</p>
+        </div>
 
-    <!-- Worksheet Modal -->
-    <div id="worksheet-modal" class="worksheet-modal">
-        <div class="worksheet-content">
-            <div class="worksheet-controls">
-                <div class="input-group">
-                    <label for="worksheet-rows" class="block text-sm font-medium text-gray-700 mb-1">Number of Rows:</label>
-                    <select id="worksheet-rows" class="custom-select">
-                        <option value="5">5 Rows</option>
-                        <option value="8" selected>8 Rows</option>
-                        <option value="10">10 Rows</option>
-                        <option value="12">12 Rows</option>
+        <!-- Worksheet Modal -->
+        <div id="worksheet-modal" class="worksheet-modal">
+            <div class="worksheet-content">
+                <div class="worksheet-controls">
+                    <div class="paper-controls-grid">
+                        <div class="paper-control-group">
+                            <label for="worksheet-rows" class="paper-control-label">Number of Rows:</label>
+                            <select id="worksheet-rows" class="custom-select">
+                                <option value="5">5 Rows</option>
+                                <option value="8" selected>8 Rows</option>
+                                <option value="10">10 Rows</option>
+                                <option value="12">12 Rows</option>
+                            </select>
+                        </div>
+                        
+                        <div class="paper-control-group">
+                            <label for="paper-size" class="paper-control-label">Paper Size:</label>
+                            <select id="paper-size" class="custom-select">
+                                <option value="a4" selected>A4 (210×297mm)</option>
+                                <option value="a3">A3 (297×420mm)</option>
+                                <option value="letter">Letter (216×279mm)</option>
+                                <option value="legal">Legal (216×356mm)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="paper-control-group">
+                            <label class="paper-control-label">Orientation:</label>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" id="orientation-portrait" name="orientation" value="portrait" checked>
+                                    <label for="orientation-portrait">Portrait</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="orientation-landscape" name="orientation" value="landscape">
+                                    <label for="orientation-landscape">Landscape</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="paper-control-group">
+                            <label for="scaling-mode" class="paper-control-label">Scaling Mode:</label>
+                            <select id="scaling-mode" class="custom-select">
+                                <option value="fit" selected>Fit to Page</option>
+                                <option value="actual">Actual Size</option>
+                                <option value="shrink">Shrink to Fit</option>
+                                <option value="custom">Custom %</option>
+                            </select>
+                        </div>
+                        
+                        <div class="paper-control-group" id="custom-scale-container" style="display: none;">
+                            <label for="custom-scale" class="paper-control-label">Custom Scale (%):</label>
+                            <input type="number" id="custom-scale" class="custom-input" min="10" max="200" value="100">
+                        </div>
+                    </div>
+                    
+                    <div id="scale-preview" class="preview-text">
+                        Preview: Worksheet will be scaled to fit on A4 portrait (210×297mm)
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="add-characters-checkbox" checked>
+                        <label for="add-characters-checkbox">Add Characters</label>
+                    </div>
+                    <div class="flex gap-2 flex-wrap justify-center">
+                        <button id="download-worksheet-btn" class="action-btn bg-blue-500 hover:bg-blue-600 text-white">Download PDF</button>
+                        <button id="close-worksheet-btn" class="action-btn bg-gray-500 hover:bg-gray-600 text-white">Close</button>
+                    </div>
+                </div>
+                <div id="worksheet-container"></div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-xl space-y-6 md:space-y-8 text-center">
+            <!-- Logo and Title aligned horizontally -->
+            <div class="header-container">
+                <img src="ORIGINAL FAVICON.png" alt="Chinese Character Study" class="logo-image">
+                <div class="title-container">
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
+                        Traditional & Simplified Chinese Character Study
+                    </h1>
+                </div>
+            </div>
+            
+            <!-- Dropdowns for selecting the day and characters per day -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                <div class="flex flex-col items-center space-y-2 w-full sm:w-auto">
+                    <label for="char-count-select" class="text-sm sm:text-base font-medium text-gray-700">Characters per Day:</label>
+                    <select id="char-count-select" class="custom-select w-full sm:w-auto">
+                        <!-- Options will be populated by JavaScript -->
                     </select>
                 </div>
-                <div class="checkbox-container">
-                    <input type="checkbox" id="add-characters-checkbox" checked>
-                    <label for="add-characters-checkbox">Add Characters</label>
-                </div>
-                <div class="flex gap-2 flex-wrap justify-center">
-                    <button id="download-worksheet-btn" class="action-btn bg-blue-500 hover:bg-blue-600">Download PDF</button>
-                    <button id="close-worksheet-btn" class="action-btn bg-gray-500 hover:bg-gray-600">Close</button>
+                <div class="flex flex-col items-center space-y-2 w-full sm:w-auto">
+                    <label for="day-select" class="text-sm sm:text-base font-medium text-gray-700">Select a Day:</label>
+                    <select id="day-select" class="custom-select w-full sm:w-auto">
+                        <option value="" disabled selected>-- Choose a Day --</option>
+                    </select>
                 </div>
             </div>
-            <div id="worksheet-container"></div>
+
+            <!-- Container for characters and meanings -->
+            <div id="characters-container" class="characters-grid p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                <!-- Character boxes will be populated here by JavaScript -->
+            </div>
+
+            <!-- Buttons to show/hide meanings and toggle character type -->
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 mt-4">
+                <button id="toggle-meaning-btn" class="action-btn bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Show Meanings
+                </button>
+                <button id="toggle-type-btn" class="action-btn bg-indigo-500 text-white hover:bg-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Switch to Simplified
+                </button>
+                <button id="worksheet-btn" class="action-btn bg-green-500 text-white hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Generate Worksheet
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-xl space-y-6 md:space-y-8 text-center">
-        <!-- Logo/Home Button - MOVED INSIDE MAIN CONTAINER -->
-        <div class="logo-container">
-            <!-- Removed link wrapper to make it less button-like -->
-            <img src="ORIGINAL FAVICON.png" alt="Chinese Character Study" class="logo-image">
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div>
+                <div class="footer-logo">
+                    <img src="ORIGINAL FAVICON.png" alt="Chinese Character Study" class="footer-logo-img">
+                    <span class="font-semibold text-white">Chinese Character Study</span>
+                </div>
+                <p class="max-w-xs text-sm sm:text-base text-slate-300">A free tool to help students and teachers learn and practice Traditional and Simplified Chinese characters with stroke order animations.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-slate-300 hover:text-white">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                    </a>
+                    <a href="#" aria-label="Twitter">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-slate-300 hover:text-white">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                    </a>
+                    <a href="#" aria-label="Instagram">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-slate-300 hover:text-white">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.358-.2 6.78-2.618 6.98-6.98.058-1.28.072-1.689.072-4.948 0-3.259-.014-3.667-.072-4.947-.2-4.358-2.618-6.78-6.98-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="footer-heading">Resources</h3>
+                <ul class="footer-links">
+                    <li><a href="#" class="text-sm sm:text-base hover:text-white">Character Database</a></li>
+                    <li><a href="#" class="text-sm sm:text-base hover:text-white">Learning Guides</a></li>
+                    <li><a href="#" class="text-sm sm:text-base hover:text-white">Worksheets</a></li>
+                    <li><a href="#" class="text-sm sm:text-base hover:text-white">Teaching Resources</a></li>
+                    <li><a href="#" class="text-sm sm:text-base hover:text-white">Blog & Articles</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h3 class="footer-heading">Company</h3>
+                <ul class="footer-links">
+                    <li><a href="#" class="text-sm sm:text-base hover:text-white">About Us</a></li>
+                    <li><a href="#" class="text-sm sm:text-base hover:text-white">Contact</a></li>
+                    <li><a href="#" class="text-sm sm:text-base hover:text-white">Privacy Policy</a></li>
+                    <li><a href="#" class="text-sm sm:text-base hover:text-white">Terms of Service</a></li>
+                    <li><a href="#" class="text-sm sm:text-base hover:text-white">FAQ</a></li>
+                    <li>
+                        <a href="#" class="donate-btn bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2 text-sm sm:text-base" aria-label="Donate to Chinese Character Study">Donate</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-
-        <!-- Title -->
-        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
-            Traditional & Simplified<br class="sm:hidden"> Chinese Character Study
-        </h1>
         
-        <!-- Dropdowns for selecting the day and characters per day -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-            <div class="flex flex-col items-center space-y-2 w-full sm:w-auto">
-                <label for="char-count-select" class="text-sm sm:text-base font-medium text-gray-700">Characters per Day:</label>
-                <select id="char-count-select" class="custom-select w-full sm:w-auto">
-                    <!-- Options will be populated by JavaScript -->
-                </select>
-            </div>
-            <div class="flex flex-col items-center space-y-2 w-full sm:w-auto">
-                <label for="day-select" class="text-sm sm:text-base font-medium text-gray-700">Select a Day:</label>
-                <select id="day-select" class="custom-select w-full sm:w-auto">
-                    <option value="" disabled selected>-- Choose a Day --</option>
-                </select>
-            </div>
+        <div class="footer-bottom">
+            <p class="text-sm text-slate-400">&copy; 2025 Chinese Character Study. All rights reserved.</p>
         </div>
-
-        <!-- Container for characters and meanings -->
-        <div id="characters-container" class="characters-grid p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-            <!-- Character boxes will be populated here by JavaScript -->
-        </div>
-
-        <!-- Buttons to show/hide meanings and toggle character type -->
-        <div class="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 mt-4">
-            <button id="toggle-meaning-btn" class="action-btn bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                Show Meanings
-            </button>
-            <button id="toggle-type-btn" class="action-btn bg-indigo-500 text-white hover:bg-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                Switch to Simplified
-            </button>
-            <button id="worksheet-btn" class="action-btn bg-green-500 text-white hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                Generate Worksheet
-            </button>
-        </div>
-    </div>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -490,12 +756,28 @@
                 const closeWorksheetBtn = document.getElementById('close-worksheet-btn');
                 const worksheetRowsSelect = document.getElementById('worksheet-rows');
                 const addCharactersCheckbox = document.getElementById('add-characters-checkbox');
+                
+                // New elements for paper controls
+                const paperSizeSelect = document.getElementById('paper-size');
+                const orientationRadios = document.querySelectorAll('input[name="orientation"]');
+                const scalingModeSelect = document.getElementById('scaling-mode');
+                const customScaleContainer = document.getElementById('custom-scale-container');
+                const customScaleInput = document.getElementById('custom-scale');
+                const scalePreviewText = document.getElementById('scale-preview');
 
                 // State variables
                 let isSimplifiedMode = false;
                 let writers = [];
                 let currentCharacters = [];
                 let strokeData = {}; // Store stroke data for characters
+                
+                // Paper size definitions (width x height in mm)
+                const paperSizes = {
+                    a4: { width: 210, height: 297, name: 'A4' },
+                    a3: { width: 297, height: 420, name: 'A3' },
+                    letter: { width: 216, height: 279, name: 'Letter' },
+                    legal: { width: 216, height: 356, name: 'Legal' }
+                };
                 
                 // Function to dynamically populate the day dropdown
                 function populateDayDropdown() {
@@ -731,6 +1013,41 @@
                     updateCharacters();
                 }
 
+                // Function to update the scale preview text
+                function updateScalePreview() {
+                    const paperSize = paperSizeSelect.value;
+                    const orientation = document.querySelector('input[name="orientation"]:checked').value;
+                    const scalingMode = scalingModeSelect.value;
+                    
+                    // Get paper dimensions
+                    let width = paperSizes[paperSize].width;
+                    let height = paperSizes[paperSize].height;
+                    
+                    // Swap dimensions for landscape
+                    if (orientation === 'landscape') {
+                        [width, height] = [height, width];
+                    }
+                    
+                    let scaleText = '';
+                    switch (scalingMode) {
+                        case 'fit':
+                            scaleText = 'scaled to fit';
+                            break;
+                        case 'actual':
+                            scaleText = 'at actual size';
+                            break;
+                        case 'shrink':
+                            scaleText = 'shrunk to fit if needed';
+                            break;
+                        case 'custom':
+                            const scaleValue = customScaleInput.value;
+                            scaleText = `at custom scale: ${scaleValue}%`;
+                            break;
+                    }
+                    
+                    scalePreviewText.textContent = `Preview: Worksheet will be ${scaleText} on ${paperSizes[paperSize].name} ${orientation} (${width}×${height}mm)`;
+                }
+
                 // Function to generate worksheet
                 async function generateWorksheet() {
                     const rows = parseInt(worksheetRowsSelect.value);
@@ -783,13 +1100,31 @@
                             worksheetContainer.appendChild(zhuyinCell);
                         }
                     }
+                    
+                    // Update the scale preview
+                    updateScalePreview();
                 }
 
-                // Function to download worksheet as PDF - DRAW DIRECTLY ON CANVAS THEN ADD TO PDF
+                // Function to download worksheet as PDF
                 async function downloadWorksheet() {
                     if (worksheetContainer.children.length === 0) {
                         alert('Please generate the worksheet first!');
                         return;
+                    }
+
+                    // Get paper settings
+                    const paperSize = paperSizeSelect.value;
+                    const orientation = document.querySelector('input[name="orientation"]:checked').value;
+                    const scalingMode = scalingModeSelect.value;
+                    const customScale = parseInt(customScaleInput.value, 10) || 100;
+                    
+                    // Get paper dimensions
+                    let pageWidthMm = paperSizes[paperSize].width;
+                    let pageHeightMm = paperSizes[paperSize].height;
+                    
+                    // Swap dimensions for landscape
+                    if (orientation === 'landscape') {
+                        [pageWidthMm, pageHeightMm] = [pageHeightMm, pageWidthMm];
                     }
 
                     // Determine rows and cols from the worksheet DOM
@@ -800,14 +1135,14 @@
                     }
 
                     const totalChildren = worksheetContainer.children.length;
-                    // Each logical column produces 2 DOM children per row (cell + zhuyin), so:
+                    // Each logical column produces 2 DOM children per row (cell + zhuyin)
                     const cols = Math.round(totalChildren / (rows * 2));
                     if (!cols || cols <= 0) {
                         alert('Could not determine columns for PDF generation.');
                         return;
                     }
 
-                    // Measure cell sizes directly from DOM (trusted source)
+                    // Measure cell sizes directly from DOM
                     const sampleCharCell = worksheetContainer.querySelector('.worksheet-grid-cell');
                     const sampleZhuyinCell = worksheetContainer.querySelector('.worksheet-zhuyin-cell');
                     if (!sampleCharCell || !sampleZhuyinCell) {
@@ -825,17 +1160,15 @@
                     const totalWidthPx = Math.ceil(cols * (cellWidthPx + zhuyinWidthPx));
                     const totalHeightPx = Math.ceil(rows * cellHeightPx);
 
-                    // Wait for fonts to be ready so canvas draws the correct CJK glyphs
+                    // Wait for fonts to be ready
                     try {
                         if (document.fonts && document.fonts.ready) await document.fonts.ready;
                     } catch (e) {
-                        // continue even if fonts.ready isn't available
+                        // Continue even if fonts.ready isn't available
                     }
 
                     // Conversion helpers
                     const pxToMm = 0.2645833333; // 1px ~= 0.264583333 mm at 96dpi
-                    const pageWidthMm = 210;
-                    const pageHeightMm = 297;
                     const marginMm = 10;
                     const availableWidthMm = pageWidthMm - marginMm * 2;
                     const availableHeightMm = pageHeightMm - marginMm * 2;
@@ -844,14 +1177,29 @@
                     const rawWidthMm = totalWidthPx * pxToMm;
                     const rawHeightMm = totalHeightPx * pxToMm;
 
-                    // Determine scale to fit available area (only downscale to fit)
-                    let scalePdf = Math.min(1, availableWidthMm / rawWidthMm, availableHeightMm / rawHeightMm);
+                    // Determine scale based on selected scaling mode
+                    let scalePdf = 1;
+                    switch (scalingMode) {
+                        case 'fit':
+                            scalePdf = Math.min(availableWidthMm / rawWidthMm, availableHeightMm / rawHeightMm);
+                            break;
+                        case 'actual':
+                            scalePdf = 1;
+                            break;
+                        case 'shrink':
+                            scalePdf = Math.min(1, availableWidthMm / rawWidthMm, availableHeightMm / rawHeightMm);
+                            break;
+                        case 'custom':
+                            scalePdf = customScale / 100;
+                            break;
+                    }
+                    
                     if (!isFinite(scalePdf) || scalePdf <= 0) scalePdf = 1;
 
                     const finalImageWidthMm = rawWidthMm * scalePdf;
                     const finalImageHeightMm = rawHeightMm * scalePdf;
 
-                    // Create high-DPI canvas to keep quality
+                    // Create high-DPI canvas
                     const deviceRatio = Math.min(window.devicePixelRatio || 1, 2);
                     const canvas = document.createElement('canvas');
                     canvas.width = Math.ceil(totalWidthPx * deviceRatio);
@@ -865,18 +1213,18 @@
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, totalWidthPx, totalHeightPx);
 
-                    // Draw grid cells and dotted midlines to mimic preview
+                    // Draw grid cells and dotted midlines
                     for (let r = 0; r < rows; r++) {
                         for (let c = 0; c < cols; c++) {
                             const x = c * (cellWidthPx + zhuyinWidthPx);
                             const y = r * cellHeightPx;
 
-                            // draw outer border for main char cell
+                            // Draw outer border for main char cell
                             ctx.strokeStyle = '#c8d6ce';
                             ctx.lineWidth = 1;
                             ctx.strokeRect(x + 0.5, y + 0.5, cellWidthPx - 1, cellHeightPx - 1);
 
-                            // draw vertical dotted center line in main cell (approximate repeating-linear-gradient)
+                            // Draw vertical dotted center line
                             ctx.strokeStyle = '#99a29e';
                             ctx.lineWidth = 0.8;
                             const centerX = x + cellWidthPx / 2;
@@ -887,7 +1235,7 @@
                                 ctx.stroke();
                             }
 
-                            // draw horizontal dotted center line
+                            // Draw horizontal dotted center line
                             const centerY = y + cellHeightPx / 2;
                             for (let xx = x + 2; xx < x + cellWidthPx; xx += 5) {
                                 ctx.beginPath();
@@ -896,7 +1244,7 @@
                                 ctx.stroke();
                             }
 
-                            // draw zhuyin cell
+                            // Draw zhuyin cell
                             const zx = x + cellWidthPx;
                             ctx.strokeStyle = '#c8d6ce';
                             ctx.lineWidth = 1;
@@ -904,11 +1252,8 @@
                         }
                     }
 
-                    // Draw characters placed in the top row (the preview puts characters only in row 0 if addCharacters checked)
-                    // Map DOM top-row cells to canvas positions to ensure exact placement of characters and stroke numbers.
+                    // Draw characters in the top row
                     for (let colIndex = 0; colIndex < cols; colIndex++) {
-                        // The child order for a row is: [charCell, zhuyinCell, charCell, zhuyinCell, ...]
-                        // For row 0, the first row's children indices are 0..(cols*2 - 1)
                         const domIndex = colIndex * 2;
                         const charCellDom = worksheetContainer.children[domIndex];
                         if (!charCellDom) continue;
@@ -918,9 +1263,8 @@
                             const x = colIndex * (cellWidthPx + zhuyinWidthPx);
                             const y = 0;
 
-                            // Use a font size relative to cell height so characters look like preview
+                            // Use a font size relative to cell height
                             const targetFontSize = Math.min(Math.floor(cellHeightPx * 0.72), 56);
-                            // Use a list of CJK-capable fonts with fallbacks — browser will pick appropriate glyphs.
                             ctx.fillStyle = '#000000';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
@@ -929,10 +1273,9 @@
                             // Draw character centered
                             ctx.fillText(charText, x + cellWidthPx / 2, y + cellHeightPx / 2 + 2);
 
-                            // replicate stroke-number small circles positioned in DOM
+                            // Replicate stroke-number circles
                             const numberEls = charCellDom.querySelectorAll('.stroke-number');
                             numberEls.forEach(numEl => {
-                                // use offset within cell for exact pixel placement
                                 const left = numEl.offsetLeft || parseFloat(numEl.style.left) || 0;
                                 const top = numEl.offsetTop || parseFloat(numEl.style.top) || 0;
                                 const numberText = (numEl.textContent || '').trim();
@@ -941,13 +1284,13 @@
                                 const cx = x + left + radius;
                                 const cy = y + top + radius;
 
-                                // small white circle background
+                                // Draw white circle background
                                 ctx.fillStyle = '#ffffff';
                                 ctx.beginPath();
                                 ctx.arc(cx, cy, radius + 0.2, 0, Math.PI * 2);
                                 ctx.fill();
 
-                                // draw number text in red
+                                // Draw number in red
                                 ctx.fillStyle = '#e53e3e';
                                 ctx.font = '8px Arial, Helvetica, sans-serif';
                                 ctx.textAlign = 'center';
@@ -957,24 +1300,20 @@
                         }
                     }
 
-                    // Convert canvas to image and place into PDF, scaled to fit page with margins
+                    // Convert canvas to image and place into PDF
                     const imgData = canvas.toDataURL('image/jpeg', 0.98);
 
-                    // Create jsPDF document - FIXED: Properly access jsPDF
+                    // Create jsPDF document
                     let doc;
                     try {
-                        // Try to access jsPDF from the html2pdf bundle
                         if (typeof window.jspdf !== 'undefined') {
-                            // html2pdf bundles jsPDF and exposes it as window.jspdf
-                            doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                            doc = new window.jspdf.jsPDF({ unit: 'mm', format: paperSize, orientation: orientation });
                         } else if (typeof window.jsPDF !== 'undefined') {
-                            // Direct jsPDF library
-                            doc = new window.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                            doc = new window.jsPDF({ unit: 'mm', format: paperSize, orientation: orientation });
                         } else {
-                            // Last resort: try to get it from html2pdf function
                             const html2pdf = window.html2pdf;
                             if (html2pdf && html2pdf.jsPDF) {
-                                doc = new html2pdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                                doc = new html2pdf.jsPDF({ unit: 'mm', format: paperSize, orientation: orientation });
                             } else {
                                 throw new Error('jsPDF not available');
                             }
@@ -1034,6 +1373,24 @@
                         await generateWorksheet();
                     }
                 });
+
+                // Show/hide custom scale input based on scaling mode
+                scalingModeSelect.addEventListener('change', () => {
+                    if (scalingModeSelect.value === 'custom') {
+                        customScaleContainer.style.display = 'flex';
+                    } else {
+                        customScaleContainer.style.display = 'none';
+                    }
+                    updateScalePreview();
+                });
+                
+                // Update preview when paper settings change
+                paperSizeSelect.addEventListener('change', updateScalePreview);
+                orientationRadios.forEach(radio => {
+                    radio.addEventListener('change', updateScalePreview);
+                });
+                scalingModeSelect.addEventListener('change', updateScalePreview);
+                customScaleInput.addEventListener('input', updateScalePreview);
 
                 downloadWorksheetBtn.addEventListener('click', downloadWorksheet);
                 closeWorksheetBtn.addEventListener('click', () => {
